@@ -28,12 +28,12 @@ library(rgdal)
 setwd("C:/Users/nylaj/Desktop/Code/Bryophytes/Humidity Data") 
 
 ### Assign Variables to Data Set 
-maxhumid <- raster("GRIDMET_max_RH.tif")
-minhumid <- raster("GRIDMET_min_RH.tif")
+maxhumid <- raster("GRIDMET_max_RH_v2.tif")
+minhumid <- raster("GRIDMET_min_RH_v2.tif")
 
 ### Plot Maps 
-plot(maxhumid, main="Average Maximum Relative Humidity", xlab="Longitude", ylab="Latitude")
-plot(minhumid, main="Average Minimum Relative Humidity", xlab="Longitude", ylab="Latitude")
+plot(maxhumid, main="Maximum Relative Humidity", xlab="Longitude", ylab="Latitude")
+plot(minhumid, main="Minimum Relative Humidity", xlab="Longitude", ylab="Latitude")
 
 ### Obtain Coordinates from Data Set CVS
 bryophyte <- read.csv("FBQ_Data_Sheet_HUM.csv", sep = ",")

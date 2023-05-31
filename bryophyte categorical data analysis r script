@@ -67,7 +67,6 @@ bryomossarea <- subset(bryonumdata, select = c("heat_island", "hab_num", "growth
 speciesglm <- glm(num_species ~ heat_island*hab_num*water_pres*growth_cat, family = poisson, data = bryonumspecies)
 speciessummary <- summary(speciesglm)
 
-
 colonyglm <- glm(num_col ~ heat_island*hab_num*water_pres*growth_cat, family = poisson, data = bryonumcol)
 summary(colonyglm)
 
