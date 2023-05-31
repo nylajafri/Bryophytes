@@ -32,12 +32,21 @@ bryophyte <- read.csv("FBQ_Data_Sheet.csv")
 View(bryophyte)
 
 
+##Moss Area nad Mmicro Cat have high p value
 ### Compare Data 
-boxplot(bryophyte$uhii_year~bryophyte$site.name, xlab='Urban Heat Island Index',
+boxplot(bryophyte$moss_area_m2~bryophyte$water_pres, xlab='Urban Heat Island Index',
         ylab='Site Name')
-shapiro.test(bryophyte$moss_area_m2) # To test normality
-kruskal.test(bryophyte$uhii_year~bryophyte$site.name) #low p value means that there is variation across sites 
 
+boxplot(bryophyte$num_species~bryophyte$heat_island, xlab='Urban Heat Island Index',
+        ylab='Site Name')
+
+boxplot(bryophyte$num_col~bryophyte$heat_island, xlab='Urban Heat Island Index',
+        ylab='Site Name')
+
+shapiro.test(bryophyte$moss_area_m2) # To test normality
+kruskal.test(bryophyte$moss_area_m2~bryophyte$dist_water_cat) #low p value means that there is variation across sites 
+kruskal.test(bryophyte$num_species~bryophyte$heat_island)
+kruskal.test(bryophyte$num_col~bryophyte$heat_island)
 
 ### Linear Regression Test 
 ## Moss Area 
@@ -60,10 +69,19 @@ tab_model(modelarea, modelcolony, modelspecies,
                           "Minimum Humidity (over 1 year)"),  
           dv.labels = c("Moss Area (m^2)", "Number of Colonies", "Number of Species"))
 
-### Plot 
+### Plot Linear Regressions 
 avPlots(modelarea)
 avPlots(modelcolony)
-avPlots(modelspecies)
+avPlots(modelspecies) 
+
+##Plot Significant Figures
+plot(bryophyte$can_cov, bryophyte$num_col, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")
+abline(lm(bryophyte$can_cov~bryophyte$num_col), col="red") # regression line (y~x)
+
+plot(bryophyte$can_cov, bryophyte$num_species, xlab = "Canopy Cover (Percentage)", ylab = "Number of Species")
+abline(lm(bryophyte$can_cov~bryophyte$num_species), col="red") # regression line (y~x)
+#lines(lowess(bryophyte$can_cov,bryophyte$num_col), col="blue") # lowess line (x,y)
+
 
 
 ### Check Models 
