@@ -33,20 +33,24 @@ View(bryophyte)
 
 
 ##Moss Area and Micro Cat have high p value
-### Compare Data 
-boxplot(bryophyte$moss_area_m2~bryophyte$water_pres, xlab='Urban Heat Island Index',
-        ylab='Site Name')
+### Test Normality
+shapiro.test(bryophyte$moss_area_m2)  #W = 0.57078, p-value < 2.2e-16
+shapiro.test(bryophyte$num_species)   #W = 0.63541, p-value < 2.2e-16
+shapiro.test(bryophyte$num_col)       #W = 0.62936, p-value < 2.2e-16
 
-boxplot(bryophyte$num_species~bryophyte$heat_island, xlab='Urban Heat Island Index',
-        ylab='Site Name')
+### Kruskal Wallis Test 
+#low p value means that there is variation across indep var 
+kruskal.test(bryophyte$moss_area_m2~bryophyte$can_cov)        #p-value = 0.2976
+kruskal.test(bryophyte$moss_area_m2~bryophyte$max_humidity)   #p-value = 0.03173
+kruskal.test(bryophyte$moss_area_m2~bryophyte$min_humidity)   #p-value = 0.03173
 
-boxplot(bryophyte$num_col~bryophyte$heat_island, xlab='Urban Heat Island Index',
-        ylab='Site Name')
+kruskal.test(bryophyte$num_species~bryophyte$can_cov)         #p-value = 0.3135
+kruskal.test(bryophyte$num_species~bryophyte$max_humidity)    #p-value = 0.02855
+kruskal.test(bryophyte$num_species~bryophyte$min_humidity)    #p-value = 0.02855
 
-shapiro.test(bryophyte$moss_area_m2) # To test normality
-kruskal.test(bryophyte$moss_area_m2~bryophyte$dist_water_cat) #low p value means that there is variation across sites 
-kruskal.test(bryophyte$num_species~bryophyte$heat_island)
-kruskal.test(bryophyte$num_col~bryophyte$heat_island)
+kruskal.test(bryophyte$num_col~bryophyte$can_cov)             #p-value = 0.3404
+kruskal.test(bryophyte$num_col~bryophyte$max_humidity)        #p-value = 0.008885
+kruskal.test(bryophyte$num_col~bryophyte$min_humidity)        #p-value = 0.008885
 
 
 ### Linear Regression Test 
