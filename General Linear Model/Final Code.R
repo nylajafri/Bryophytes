@@ -85,8 +85,7 @@ kruskal.test(bryophyte$num_col~bryophyte$min_humidity)        #p-value = 0.00888
 kruskal.test(bryophyte$moss_area_m2~bryophyte$min_humidity)   #p-value = 0.03173  <-
 
 
-### Test Correlation Between Independent Variables (>0.5 maked with ->)
-#Get rid of dist_road, dist_water, max_humidity, min_humidity
+### Test Correlation Between Independent Variables (>0.5 marked with ->)
 cor(bryophyte$heat_island, bryophyte$micro_cat) #[1] -0.01264691    
 cor(bryophyte$heat_island, bryophyte$water_pres) #[1] -0.1369173    
 cor(bryophyte$heat_island, bryophyte$growth_cat) #[1] -0.03249287
@@ -184,13 +183,12 @@ cor(bryophyte$num_col, bryophyte$num_species, na.rm=TRUE) # NA
 
 
 ### GLM for Each Applicable Dependent Variable 
-areaglm <- glm((moss_area_m2 +1) ~ heat_island + water_pres + growth_cat, family= Gamma, data = bryophyte)
+areaglm <- glm((moss_area_m2 +1) ~ heat_island + water_pres + growth_cat, family = Gamma, data = bryophyte)
 avPlots(areaglm)
 tab_model(areaglm)
 AIC(areaglm)
 
-speciesglm <- glm(num_species ~ heat_island + growth_cat
-                  + dist_walk_cat + dist_road_cat, family = poisson, data = bryophyte)
+speciesglm <- glm(num_species ~ heat_island + growth_cat + dist_walk_cat + dist_road_cat, family = poisson, data = bryophyte)
 avPlots(speciesglm)
 tab_model(speciesglm)
 AIC(speciesglm)
@@ -200,6 +198,7 @@ colonyglm <- glm(num_col ~ heat_island + water_pres + growth_cat, family = poiss
 avPlots(colonyglm)
 tab_model(colonyglm)
 AIC(colonyglm)
+
 
 
 ### Final Tables
@@ -245,8 +244,8 @@ abline(lm(bryophyte$num_col ~ bryophyte$can_cov), col="red")
 plot(bryophyte$can_cov, bryophyte$num_species, xlab = "Canopy Cover (Percentage)", ylab = "Number of Species")
 abline(lm(bryophyte$num_species ~ bryophyte$can_cov), col="red") 
 
-### Check Models (this got rid of Moss Area using GLM since its results are not integers)
-AIC(areaglm)
+### Check Models
+AIC()
 
 
 ### Scatterplot
