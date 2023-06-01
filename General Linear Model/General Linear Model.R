@@ -31,6 +31,12 @@ library(ggplot2)
 library(car)
 
 
+###Test Normality 
+shapiro.test(bryophyte$moss_area_m2)  #W = 0.57078, p-value < 2.2e-16
+shapiro.test(bryophyte$num_species)   #W = 0.63541, p-value < 2.2e-16
+shapiro.test(bryophyte$num_col)       #W = 0.62936, p-value < 2.2e-16
+
+
 ### Kruskal Wallis Test for significance 
 kruskal.test(bryophyte$num_species~bryophyte$heat_island) ##p-value = 0.02435   <-
 kruskal.test(bryophyte$num_col~bryophyte$heat_island)     ##p-value = 0.01486   <-
