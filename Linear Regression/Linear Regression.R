@@ -32,7 +32,7 @@ bryophyte <- read.csv("FBQ_Data_Sheet.csv")
 View(bryophyte)
 
 
-##Moss Area nad Mmicro Cat have high p value
+##Moss Area and Micro Cat have high p value
 ### Compare Data 
 boxplot(bryophyte$moss_area_m2~bryophyte$water_pres, xlab='Urban Heat Island Index',
         ylab='Site Name')
@@ -51,24 +51,25 @@ kruskal.test(bryophyte$num_col~bryophyte$heat_island)
 
 ### Linear Regression Test 
 ## Moss Area 
-modelarea <- lm(moss_area_m2 ~ uhii_year + can_cov + max_humidity + min_humidity, data = bryophyte)
+modelarea <- lm(moss_area_m2 ~ can_cov + max_humidity + min_humidity, data = bryophyte)
 summary(modelarea)
 
 ## Number of Colonies 
-modelcolony <- lm(num_col ~ uhii_year + can_cov + max_humidity + min_humidity, data = bryophyte)
+modelcolony <- lm(num_col ~ can_cov + max_humidity + min_humidity, data = bryophyte)
 summary(modelcolony)
 
 ## Number of Species
-modelspecies <- lm(num_species ~ uhii_year + can_cov + max_humidity + min_humidity, data = bryophyte)
+modelspecies <- lm(num_species ~ can_cov + max_humidity + min_humidity, data = bryophyte)
 summary(modelspecies)
 
 
 ### Print Table
 tab_model(modelarea, modelcolony, modelspecies, 
-          pred.labels = c("Intercept", "Urban Heat Island Index (over 1 year)",
-                          "Canopy Cover", "Maximum Humidity (over 1 year)", 
-                          "Minimum Humidity (over 1 year)"),  
-          dv.labels = c("Moss Area (m^2)", "Number of Colonies", "Number of Species"))
+          pred.labels = c("Intercept", "Canopy Cover (Percentage)", 
+                          "Maximum Relative Humidity (over 1 year)", 
+                          "Minimum Relative Humidity (over 1 year)"),  
+          dv.labels = c("Moss Area (m^2)", "Number of Colonies", "Number of Species"), 
+          title= "Linear Regression Analysis of Bryophytes")
 
 ### Plot Added Variable Linear Regressions 
 avPlots(modelarea)
@@ -78,10 +79,10 @@ avPlots(modelspecies)
 
 ##Plot Significant Figures
 plot(bryophyte$can_cov, bryophyte$num_col, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")
-abline(lm(bryophyte$can_cov~bryophyte$num_col), col="red") 
+abline(lm(bryophyte$num_col ~ bryophyte$can_cov), col="red") 
 
 plot(bryophyte$can_cov, bryophyte$num_species, xlab = "Canopy Cover (Percentage)", ylab = "Number of Species")
-abline(lm(bryophyte$can_cov~bryophyte$num_species), col="red") 
+abline(lm(bryophyte$num_species ~ bryophyte$can_cov), col="red") 
 
 
 ### Check Models 
