@@ -1,0 +1,85 @@
+#set working directory 
+setwd("C:/Users/prada/Downloads/spring 2023 fbq bryophytes")
+
+#read bryophyte data file as csv, reupload once data input is complete
+bryopnum = read_csv("FBQ Data Sheet - Final num.csv")
+
+#load mass package to run manova
+library(MASS)
+#load packages to test for multivariate normality and other assumptions 
+library(rstatix)
+library(readr)
+
+#make subset of data with variables analyzed for manova 
+bryonumdata = subset(bryonum, select = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres", "num_col", "moss_area_m2"))
+
+
+#data prep for running a manova 
+bryonumdata = subset(bryopnum, select = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres", "num_col", "moss_area_m2"))
+
+#group dependents together using cbind 
+dependent_vars3 <- cbind(bryonumdata$num_species, bryonumdata$num_col, bryonumdata$moss_area_m2)
+
+#group independent var together using cbind 
+independent_var3 <- cbind(bryonumdata$heat_island, bryonumdata$water_pres, bryonumdata$hab_num, bryonumdata$growth_cat)
+
+#run manova 
+manova_res <- manova(dependent_vars3 ~ independent_var3, data = bryonumdata) 
+summary(manova_res)
+
+#load library car for testing multivariate outliers 
+mvnormtest <- mahalanobis_distance(data = bryonumdata)%>% 
+  + filter(is.outlier == TRUE)
+#test for multivariate normality 
+library(effectsize)
+eta_squared(manova_res)
+# Effect Size for ANOVA (Type I)
+
+#Parameter        | Eta2 (partial) |       95% CI
+------------------------------------------------
+ # independent_var3 |           0.10 | [0.03, 1.00]
+
+#- One-sided CIs: upper bound fixed at [1.00].
+#> mshapiro_test(bryonumdata)
+# A tibble: 1 x 2
+#statistic  p.value
+#<dbl>    <dbl>
+# 1     0.771 5.87e-13
+#dataset fails normality test so non-parametric test must be used
+  
+#data test groups for normality to see if can run three factor anova 
+shapiro.test(bryonumdata$water_pres)
+shapiro.test(bryonumdata$water_p)
+shapiro.test(bryonumdata$hab_num)
+shapiro.test(bryonumdata$heat_island)
+
+#data fails normality use a glm model 
+
+
+#break data up to run glm
+bryonumspecies <- subset(bryonumdata, selec = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres"))
+
+bryonumcol <- subset(bryonumdata, select = c("heat_island", "hab_num", "growth_cat", "water_pres", "num_col"))
+
+bryomossarea <- subset(bryonumdata, select = c("heat_island", "hab_num", "growth_cat", "water_pres", "moss_area_m2"))
+
+#runglms 
+speciesglm <- glm(num_species ~ heat_island*hab_num*water_pres*growth_cat, family = poisson, data = bryonumspecies)
+speciessummary <- summary(speciesglm)
+
+colonyglm <- glm(num_col ~ heat_island*hab_num*water_pres*growth_cat, family = poisson, data = bryonumcol)
+summary(colonyglm)
+
+mossareaglm <- glm(moss_area_m2 ~ heat_island*hab_num*water_pres*growth_cat, family = poisson, data = bryomossarea)
+summary(mossareaglm)
+
+
+#plot glms 
+plot(speciesglm)
+plot(colonyglm)
+plot(mossareaglm)
+
+#tried to use multinomial analysis 
+library(nnet)
+multinommoss <- multinom(moss_area_m2 ~ heat_island*hab_num*growth_cat*water_pres, data = bryomossarea)
+summary(multinommoss)
