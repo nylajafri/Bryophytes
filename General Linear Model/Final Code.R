@@ -6,7 +6,7 @@
 #
 # Author: Nyla Jafri (nylajafri@ucla.edu), Prada Pothong
 #
-# Script version: 0.2
+# Script version: 0.3 (idk how many its been at this point)
 #
 # R Version: 4.3.0
 #
@@ -202,7 +202,7 @@ tab_model(colonyglm)
 AIC(colonyglm)
 
 
-### Table 
+### Final Tables
 tab_model(areaglm, 
           pred.labels = c("Intercept", "Urban Heat Island Index (over 1 year)", "Microhabitat",
                           "Water Present", "Growth Substrate", "Distance to Walkway", "Distance to Road"),  
@@ -222,7 +222,7 @@ tab_model(speciesglm,
           title = "General Linear Model Analysis of Bryophytes")
 
 
-### Significant Figures
+### Significant Figures (BoxPlots for Categorical and ScatterPlots with Line of Best Fit for Continous)
 boxplot(bryophyte$num_species ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Species")
 
 boxplot(bryophyte$num_col ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Colonies")
