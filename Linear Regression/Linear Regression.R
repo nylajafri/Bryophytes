@@ -13,7 +13,7 @@
 ################################################
 
 ### Set Working Directory
-setwd("C:/Users/nylaj/Desktop/Code/Bryophytes/Linear Regression")  
+setwd("C:/Users/nylaj/Desktop/Code/Bryophytes/Linear Regression") 
 
 
 ### Dependencies 
@@ -48,6 +48,7 @@ kruskal.test(bryophyte$moss_area_m2~bryophyte$dist_water_cat) #low p value means
 kruskal.test(bryophyte$num_species~bryophyte$heat_island)
 kruskal.test(bryophyte$num_col~bryophyte$heat_island)
 
+
 ### Linear Regression Test 
 ## Moss Area 
 modelarea <- lm(moss_area_m2 ~ uhii_year + can_cov + max_humidity + min_humidity, data = bryophyte)
@@ -69,38 +70,23 @@ tab_model(modelarea, modelcolony, modelspecies,
                           "Minimum Humidity (over 1 year)"),  
           dv.labels = c("Moss Area (m^2)", "Number of Colonies", "Number of Species"))
 
-### Plot Linear Regressions 
+### Plot Added Variable Linear Regressions 
 avPlots(modelarea)
 avPlots(modelcolony)
 avPlots(modelspecies) 
 
+
 ##Plot Significant Figures
 plot(bryophyte$can_cov, bryophyte$num_col, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")
-abline(lm(bryophyte$can_cov~bryophyte$num_col), col="red") # regression line (y~x)
+abline(lm(bryophyte$can_cov~bryophyte$num_col), col="red") 
 
 plot(bryophyte$can_cov, bryophyte$num_species, xlab = "Canopy Cover (Percentage)", ylab = "Number of Species")
-abline(lm(bryophyte$can_cov~bryophyte$num_species), col="red") # regression line (y~x)
-#lines(lowess(bryophyte$can_cov,bryophyte$num_col), col="blue") # lowess line (x,y)
-
+abline(lm(bryophyte$can_cov~bryophyte$num_species), col="red") 
 
 
 ### Check Models 
 
-#AIC(modelarea, modelcolony, modelspecies)
-
 AIC(modelarea)
 AIC(modelcolony)
 AIC(modelspecies)
-
-
-
-
-
-### Ignore below 
-
-
-
-vcov(modela)
-#modela <- lm(moss_area_m2 ~ uhii_year + micro_cat + can_cov + dist_walk_cat + dist_road_cat + dist_water_cat 
-#             + max_humidity + min_humidity + growth_cat, data = bryophyte)
 
