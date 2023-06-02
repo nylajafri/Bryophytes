@@ -4,9 +4,9 @@
 # 
 # Title: Final Code: Bryophyte Generalized Linear Model
 #
-# Author: Nyla Jafri (nylajafri@ucla.edu), Prada Pothong
+# Author: Nyla Jafri (nylajafri@ucla.edu),   Prada Pothong
 #
-# Script version: 0.3 (idk how many its been at this point)
+# Script version: 0.5 (idk how many its been at this point)
 #
 # R Version: 4.3.0
 #
@@ -41,7 +41,7 @@ shapiro.test(bryophyte$num_species)   #W = 0.63541, p-value < 2.2e-16
 shapiro.test(bryophyte$num_col)       #W = 0.62936, p-value < 2.2e-16
 
 
-### Kruskal Wallis Test for significance 
+### Kruskal Wallis Test for significance (only categorical independent variables)
 kruskal.test(bryophyte$num_species~bryophyte$heat_island) ##p-value = 0.02435   <-
 kruskal.test(bryophyte$num_col~bryophyte$heat_island)     ##p-value = 0.01486   <-
 kruskal.test(bryophyte$moss_area_m2~bryophyte$heat_island)##p-value = 0.02279   <-
@@ -69,18 +69,6 @@ kruskal.test(bryophyte$moss_area_m2~bryophyte$dist_road_cat)   ##p-value = 0.246
 kruskal.test(bryophyte$num_species~bryophyte$dist_water_cat)  ##p-value = 0.2508
 kruskal.test(bryophyte$num_col~bryophyte$dist_water_cat)      ##p-value = 0.495
 kruskal.test(bryophyte$moss_area_m2~bryophyte$dist_water_cat) ##p-value = 0.1523
-
-kruskal.test(bryophyte$num_species~bryophyte$can_cov)         #p-value = 0.3135
-kruskal.test(bryophyte$num_col~bryophyte$can_cov)             #p-value = 0.3404
-kruskal.test(bryophyte$moss_area_m2~bryophyte$can_cov)        #p-value = 0.2976
-
-kruskal.test(bryophyte$num_species~bryophyte$max_humidity)    #p-value = 0.02855  <-
-kruskal.test(bryophyte$num_col~bryophyte$max_humidity)        #p-value = 0.008885 <-
-kruskal.test(bryophyte$moss_area_m2~bryophyte$max_humidity)   #p-value = 0.03173  <-
-
-kruskal.test(bryophyte$num_species~bryophyte$min_humidity)    #p-value = 0.02855  <-
-kruskal.test(bryophyte$num_col~bryophyte$min_humidity)        #p-value = 0.008885 <-
-kruskal.test(bryophyte$moss_area_m2~bryophyte$min_humidity)   #p-value = 0.03173  <-
 
 
 ### Test Correlation Between Independent Variables (>0.5 marked with ->)
@@ -186,92 +174,68 @@ vif(glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat + dist_walk_
 vif(glm((moss_area_m2 + 1) ~ heat_island + micro_cat + water_pres + growth_cat + dist_walk_cat + dist_road_cat + can_cov + max_humidity + min_humidity, family = Gamma, data = bryophyte))
 
 
-### GLM for Each Applicable Dependent Variable 
-areaglm <- glm((moss_area_m2 +1) ~ heat_island + water_pres + growth_cat, family = Gamma, data = bryophyte)
+### GLM for Each Applicable Dependent Variable (Find lowest AIC) 
+areaglm <- glm((moss_area_m2 +1) ~ heat_island + micro_cat + water_pres + growth_cat + can_cov + min_humidity, family = Gamma, data = bryophyte)
+vif(glm(num_species ~ heat_island + micro_cat + water_pres + growth_cat + dist_walk_cat + dist_road_cat + can_cov + max_humidity + min_humidity, family = poisson, data = bryophyte))
 avPlots(areaglm)
 tab_model(areaglm)
 AIC(areaglm)
 
-speciesglm <- glm(num_species ~ heat_island + growth_cat + dist_walk_cat + dist_road_cat, family = poisson, data = bryophyte)
+speciesglm <- glm(num_species ~ heat_island + micro_cat + water_pres + can_cov + dist_walk_cat + dist_road_cat, family = poisson, data = bryophyte)
+vif(glm(num_species ~ heat_island + micro_cat + water_pres + dist_walk_cat + dist_road_cat + can_cov, family = poisson, data = bryophyte))
 avPlots(speciesglm)
 tab_model(speciesglm)
 AIC(speciesglm)
 
 
-colonyglm <- glm(num_col ~ heat_island + water_pres + growth_cat, family = poisson, data = bryophyte)
+colonyglm <- glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat 
+                 + can_cov + max_humidity + min_humidity + + dist_road_cat, family = poisson, data = bryophyte)
+vif(glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat 
+        + dist_road_cat + can_cov + max_humidity + min_humidity, family = poisson, data = bryophyte))
 avPlots(colonyglm)
 tab_model(colonyglm)
 AIC(colonyglm)
 
 
-
 ### Final Tables
-tab_model(areaglm, 
+tab_model(areaglm, speciesglm,  colonyglm, 
           pred.labels = c("Intercept", "Urban Heat Island Index (over 1 year)", "Microhabitat",
-                          "Water Present", "Growth Substrate", "Distance to Walkway", "Distance to Road"),  
-          dv.labels = c("Number of Colonies", "Number of Species"), 
-          title = "General Linear Model Analysis of Bryophytes")
-
-tab_model(colonyglm,
-          pred.labels = c("Intercept", "Urban Heat Island Index (over 1 year)", "Microhabitat",
-                          "Water Present", "Growth Substrate", "Distance to Walkway", "Distance to Road"),  
-          dv.labels = c("Number of Colonies", "Number of Species"), 
-          title = "General Linear Model Analysis of Bryophytes")
-
-tab_model(speciesglm, 
-          pred.labels = c("Intercept", "Urban Heat Island Index (over 1 year)", "Microhabitat",
-                          "Water Present", "Growth Substrate", "Distance to Walkway", "Distance to Road"),  
-          dv.labels = c("Number of Colonies", "Number of Species"), 
+                          "Water Present", "Growth Substrate", "Canopy Cover (Percentage)", "Minimum Relative Humidity (over 1 year)", "Maximum Relative Humidity (over 1 year)",
+                          "Distance to Road", "Distance to Walkway"),  
+          dv.labels = c("Moss Area (m^2)", "Number of Colonies", "Number of Species"), 
           title = "General Linear Model Analysis of Bryophytes")
 
 
-### Significant Figures (BoxPlots for Categorical and ScatterPlots with Line of Best Fit for Continous)
-boxplot(bryophyte$num_species ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Species")
+
+### Significant Figures (Box Plots for Categorical and Scatter Plots with Line of Best Fit for Continuous)
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Moss Area (m^2)")
+
+boxplot(bryophyte$num_species ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Number of Species")
+
+plot(bryophyte$can_cov, bryophyte$num_species, xlab = "Canopy Cover (Percentage)", ylab = "Number of Species")
+abline(lm(bryophyte$num_species ~ bryophyte$can_cov), col="red")
+
+boxplot(bryophyte$num_species ~ bryophyte$dist_road_cat, xlab = "Distance to Road", ylab = "Number of Species")
 
 boxplot(bryophyte$num_col ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Colonies")
 
 boxplot(bryophyte$num_col ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Colonies")
 
-boxplot(bryophyte$num_species ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Number of Species")
-
 boxplot(bryophyte$num_col ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Number of Colonies")
 
 boxplot(bryophyte$num_col ~ bryophyte$growth_cat, xlab = "Growth Substrate", ylab = "Number of Colonies")
-
-boxplot(bryophyte$num_col ~ bryophyte$dist_walk_cat, xlab = "Distance to Walkway", ylab = "Number of Colonies")
 
 boxplot(bryophyte$num_col ~ bryophyte$dist_road_cat, xlab = "Distance to Road", ylab = "Number of Colonies")
 
 plot(bryophyte$can_cov, bryophyte$num_col, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")
 abline(lm(bryophyte$num_col ~ bryophyte$can_cov), col="red") 
 
-plot(bryophyte$can_cov, bryophyte$num_species, xlab = "Canopy Cover (Percentage)", ylab = "Number of Species")
-abline(lm(bryophyte$num_species ~ bryophyte$can_cov), col="red") 
+plot(bryophyte$min_humidity, bryophyte$num_col, xlab = "Minimum Relative Humidity (over 1 year)", ylab = "Number of Colonies")
+abline(lm(bryophyte$num_col ~ bryophyte$min_humidity), col="red") 
 
-### Check Models
+plot(bryophyte$max_humidity, bryophyte$num_col, xlab = "Maximum Relative Humidity (over 1 year)", ylab = "Number of Colonies")
+abline(lm(bryophyte$num_col ~ bryophyte$max_humidity), col="red") 
+
+
+### Check Model Final 
 AIC()
-
-### Scatterplot
-#plot(bryophyte$heat_island, bryophyte$num_species, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Species")
-#abline(lm(bryophyte$heat_island ~ bryophyte$num_species), col="red") 
-
-#plot(bryophyte$heat_island, bryophyte$num_col, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Colonies")
-#abline(lm(bryophyte$heat_island ~ bryophyte$num_col), col="red") 
-
-#plot(bryophyte$micro_cat, bryophyte$num_col, xlab = "Microhabitat Type", ylab = "Number of Colonies")
-#abline(lm(bryophyte$micro_cat ~ bryophyte$num_col), col="red") 
-
-#plot(bryophyte$water_pres, bryophyte$num_species, xlab = "Water Present", ylab = "Number of Species")
-#abline(lm(bryophyte$water_pres ~ bryophyte$num_species), col="red") 
-
-#plot(bryophyte$water_pres, bryophyte$num_col, xlab = "Water Present", ylab = "Number of Colonies")
-#abline(lm(bryophyte$water_pres ~ bryophyte$num_col), col="red") 
-
-#plot(bryophyte$growth_cat, bryophyte$num_col, xlab = "Growth Substrate", ylab = "Number of Colonies")
-#abline(lm(bryophyte$growth_cat ~ bryophyte$num_col), col="red")
-
-#plot(bryophyte$dist_walk_cat, bryophyte$num_col, xlab = "Distance to Walkway", ylab = "Number of Colonies")
-#abline(lm(bryophyte$dist_walk_cat ~ bryophyte$num_col), col="red") 
-
-#plot(bryophyte$dist_road_cat, bryophyte$num_col, xlab = "Distance to Road", ylab = "Number of Colonies")
-#abline(lm(bryophyte$dist_road_cat ~ bryophyte$num_col), col="red")
