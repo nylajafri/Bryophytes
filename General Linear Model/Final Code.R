@@ -25,7 +25,6 @@ View(bryophyte)
 install.packages("sjPlot")
 install.packages("lme4")
 install.packages("ggplot2")
-install.packages("na.tools")
 
 library(MASS)
 library(rstatix)
@@ -34,7 +33,6 @@ library(sjPlot)
 library(lme4)
 library(ggplot2)
 library(car)
-library(na.tools)
 
 
 ###Test Normality 
@@ -179,7 +177,13 @@ cor(bryophyte$num_species, bryophyte$min_humidity) # NA
 ### Test Correlation Between Dependent Variables 
 cor(bryophyte$moss_area_m2, bryophyte$num_col) #   NA
 cor(bryophyte$moss_area_m2, bryophyte$num_species) #   NA
-cor(bryophyte$num_col, bryophyte$num_species, na.rm=TRUE) # NA
+cor(bryophyte$num_col, bryophyte$num_species) # NA
+
+
+### Check Colinearity 
+vif(glm(num_species ~ heat_island + micro_cat + water_pres + growth_cat + dist_walk_cat + dist_road_cat + can_cov + max_humidity + min_humidity, family = poisson, data = bryophyte))
+vif(glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat + dist_walk_cat + dist_road_cat + can_cov + max_humidity + min_humidity, family = poisson, data = bryophyte))
+vif(glm((moss_area_m2 + 1) ~ heat_island + micro_cat + water_pres + growth_cat + dist_walk_cat + dist_road_cat + can_cov + max_humidity + min_humidity, family = Gamma, data = bryophyte))
 
 
 ### GLM for Each Applicable Dependent Variable 
@@ -246,7 +250,6 @@ abline(lm(bryophyte$num_species ~ bryophyte$can_cov), col="red")
 
 ### Check Models
 AIC()
-
 
 ### Scatterplot
 #plot(bryophyte$heat_island, bryophyte$num_species, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Species")
