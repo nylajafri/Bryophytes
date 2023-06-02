@@ -2,33 +2,37 @@
 setwd("C:/Users/prada/Downloads/spring 2023 fbq bryophytes")
 
 #read bryophyte data file as csv, reupload once data input is complete
-bryopnum = read_csv("FBQ Data Sheet - Final num.csv")
+bryophytefinal = read_csv("FBQ_Data_Sheet.csv")
 
 #load mass package to run manova
 library(MASS)
 #load packages to test for multivariate normality and other assumptions 
 library(rstatix)
 library(readr)
+library(sjPlot)
+library(lme4)
+library(ggplot2)
+library(car)
 
 #make subset of data with variables analyzed for manova 
-bryonumdata = subset(bryonum, select = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres", "num_col", "moss_area_m2"))
+#bryodata = subset(bryophytefinal, select = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres", "num_col", "moss_area_m2"))
 
 
 #data prep for running a manova 
-bryonumdata = subset(bryopnum, select = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres", "num_col", "moss_area_m2"))
+#bryodatamanova = subset(bryodata, select = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres", "num_col", "moss_area_m2"))
 
 #group dependents together using cbind 
-dependent_vars3 <- cbind(bryonumdata$num_species, bryonumdata$num_col, bryonumdata$moss_area_m2)
+#dependent_vars3 <- cbind(bryodatamanova$num_species, bryodatamanova$num_col, bryodatamanova$moss_area_m2)
 
 #group independent var together using cbind 
-independent_var3 <- cbind(bryonumdata$heat_island, bryonumdata$water_pres, bryonumdata$hab_num, bryonumdata$growth_cat)
+#independent_var3 <- cbind(bryodatamanova$heat_island, bryodatamanova$water_pres, bryodatamanova$hab_num, bryodatamanova$growth_cat)
 
-#run manova 
-manova_res <- manova(dependent_vars3 ~ independent_var3, data = bryonumdata) 
+#run manova IGNORE
+#manova_res <- manova(dependent_vars3 ~ independent_var3, data = bryodatamanova) 
 summary(manova_res)
 
 #load library car for testing multivariate outliers 
-mvnormtest <- mahalanobis_distance(data = bryonumdata)%>% 
+mvnormtest <- mahalanobis_distance(data = bryodatamanova)%>% 
   + filter(is.outlier == TRUE)
 #test for multivariate normality 
 library(effectsize)
@@ -40,7 +44,7 @@ eta_squared(manova_res)
  # independent_var3 |           0.10 | [0.03, 1.00]
 
 #- One-sided CIs: upper bound fixed at [1.00].
-#> mshapiro_test(bryonumdata)
+#> mshapiro_test(bryodatamanova)
 # A tibble: 1 x 2
 #statistic  p.value
 #<dbl>    <dbl>
@@ -48,38 +52,114 @@ eta_squared(manova_res)
 #dataset fails normality test so non-parametric test must be used
   
 #data test groups for normality to see if can run three factor anova 
-shapiro.test(bryonumdata$water_pres)
-shapiro.test(bryonumdata$water_p)
-shapiro.test(bryonumdata$hab_num)
-shapiro.test(bryonumdata$heat_island)
+shapiro.test(bryophytefinal$water_pres)
+shapiro.test(bryophytefinal$water_p)
+shapiro.test(bryophytefinal$hab_num)
+shapiro.test(bryophytefinal$heat_island)
 
 #data fails normality use a glm model 
 
 
 #break data up to run glm
-bryonumspecies <- subset(bryonumdata, selec = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres"))
+#bryonumspecies <- subset(bryodatamanova, selec = c("heat_island", "hab_num", "num_species", "growth_cat", "water_pres"))
 
-bryonumcol <- subset(bryonumdata, select = c("heat_island", "hab_num", "growth_cat", "water_pres", "num_col"))
+#bryonumcol <- subset(bryodatamanova, select = c("heat_island", "hab_num", "growth_cat", "water_pres", "num_col"))
 
-bryomossarea <- subset(bryonumdata, select = c("heat_island", "hab_num", "growth_cat", "water_pres", "moss_area_m2"))
+##bryophytefinal <- subset(bryophyte, select = c("heat_island", "micro_cat", "growth_cat", "dist_walk_cat", "dist_road_cat", "dist_water_cat", "water_pres", "moss_area_m2"))
 
-#runglms 
-speciesglm <- glm(num_species ~ heat_island*hab_num*water_pres*growth_cat, family = poisson, data = bryonumspecies)
-speciessummary <- summary(speciesglm)
+## run kruskall wallis test to check significant variables affecting moss area
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$heat_island)##p-value = 0.02279   <-
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$micro_cat)  ##p-value = 0.3262
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$water_pres) ##p-value = 0.006017  <-
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$growth_cat) ##p-value = 0.001388  <-
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$dist_walk_cat)  ##p-value = 0.06336
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$dist_road_cat)   ##p-value = 0.2461    
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$dist_water_cat) ##p-value = 0.1523
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$can_cov)        #p-value = 0.2976
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$max_humidity)   #p-value = 0.03173  <-
+kruskal.test(bryophytefinal$moss_area_m2~bryophytefinal$min_humidity)   #p-value = 0.03173  <-
 
-colonyglm <- glm(num_col ~ heat_island*hab_num*water_pres*growth_cat, family = poisson, data = bryonumcol)
-summary(colonyglm)
-
-mossareaglm <- glm(moss_area_m2 ~ heat_island*hab_num*water_pres*growth_cat, family = poisson, data = bryomossarea)
-summary(mossareaglm)
 
 
-#plot glms 
-plot(speciesglm)
-plot(colonyglm)
-plot(mossareaglm)
+## run kruskal wallis test to check for variation among species number variables
+kruskal.test(bryophytefinal$num_species~bryophytefinal$heat_island) ##p-value = 0.02435   <-
+kruskal.test(bryophytefinal$num_species~bryophytefinal$micro_cat)   ##p-value = 0.1185
+kruskal.test(bryophytefinal$num_species~bryophytefinal$water_pres)  ##p-value = 0.06603
+kruskal.test(bryophytefinal$num_species~bryophytefinal$growth_cat)  ##p-value = 0.000932  <-
+kruskal.test(bryophytefinal$num_species~bryophytefinal$dist_walk_cat)   ##p-value = 0.007594 <-
+kruskal.test(bryophytefinal$num_species~bryophytefinal$dist_road_cat)    ##p-value = 0.006314 <-
+kruskal.test(bryophytefinal$num_species~bryophytefinal$dist_water_cat)  ##p-value = 0.2508
+kruskal.test(bryophytefinal$num_species~bryophytefinal$can_cov)         #p-value = 0.3135
+kruskal.test(bryophytefinal$num_species~bryophytefinal$max_humidity)    #p-value = 0.02855  <-
+kruskal.test(bryophytefinal$num_species~bryophytefinal$min_humidity)    #p-value = 0.02855  <-
 
-#tried to use multinomial analysis 
-library(nnet)
-multinommoss <- multinom(moss_area_m2 ~ heat_island*hab_num*growth_cat*water_pres, data = bryomossarea)
-summary(multinommoss)
+
+## run kruskal wallis test to check variation in number of moss colony data
+kruskal.test(bryophytefinal$num_col~bryophytefinal$heat_island)     ##p-value = 0.01486   <-
+kruskal.test(bryophytefinal$num_col~bryophytefinal$micro_cat)       ##p-value = 0.6353
+kruskal.test(bryophytefinal$num_col~bryophytefinal$water_pres)      ##p-value = 0.007997  <-
+kruskal.test(bryophytefinal$num_col~bryophytefinal$growth_cat)      ##p-value = 0.003115  <-
+kruskal.test(bryophytefinal$num_col~bryophytefinal$dist_walk_cat)       ##p-value = 0.05615
+kruskal.test(bryophytefinal$num_col~bryophytefinal$dist_road_cat)        ##p-value = 0.2409    
+kruskal.test(bryophytefinal$num_col~bryophytefinal$dist_water_cat)      ##p-value = 0.495
+kruskal.test(bryophytefinal$num_col~bryophytefinal$can_cov)             #p-value = 0.3404
+kruskal.test(bryophytefinal$num_col~bryophytefinal$max_humidity)        #p-value = 0.008885 <-
+kruskal.test(bryophytefinal$num_col~bryophytefinal$min_humidity)        #p-value = 0.008885 <-
+
+
+
+#nylas old glms 
+speciesglm <- glm(num_species ~ heat_island + micro_cat + water_pres + growth_cat
+                  +                   + dist_walk_cat + dist_road_cat, family = poisson, data = bryophyte)
+avPlots(speciesglm)
+
+
+colonyglm <- glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat
+                 + dist_walk_cat + dist_road_cat, family = poisson, data = bryophyte)
+avPlots(colonyglm)
+
+#transform data to run moss area glm
+mossareaplus1 <- bryophytefinal$moss_area_m2 + 1
+
+#run moss area glm with all variables 
+mossglmog <- glm(moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + growth_cat
+                   + dist_walk_cat + dist_road_cat, family = Gamma, data = bryophytefinal) ## aic - 727.22
+
+mossglmnowaterdist <- glm(moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + growth_cat
+                                      + dist_road_cat + dist_walk_cat + can_cov + max_humidity + min_humidity, family = Gamma, data = bryophytefinal) ## aic -699.77
+summary(mossglmnowaterdist)
+
+#test vif for collinearity in variables and then remove for next glm 
+vif(glm(moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + growth_cat + dist_road_cat  + dist_walk_cat + can_cov + max_humidity + min_humidity, family = Gamma, data = bryophytefinal) )
+
+
+#glm with two highest vif values removed 
+mossareaglmnomaxhumnodistroad <- glm(moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + growth_cat  + dist_walk_cat + can_cov  + min_humidity, family = Gamma, data = bryophytefinal) ## aic = -824.42
+
+#test vif of glm with 2 variables removed, all vifs were under 2.5
+vif( glm(moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + growth_cat  + dist_walk_cat + can_cov  + min_humidity, family = Gamma, data = bryophytefinal))
+
+### LOWEST AIC VALUE test aic of glm with just hypothesis relevant variables aic -826
+mossglmnodistwalk <- glm(moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + growth_cat + can_cov  + min_humidity, family = Gamma, data = bryophytefinal) ## aic= -826.28
+
+#test glm w all categorical variables and can cover 
+mossglmogwcancov <- glm(formula = moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + can_cov + growth_cat + +dist_walk_cat + dist_road_cat, family = Gamma, data = bryophyte) ## aic -729.67
+summary(mossglmogwcancov)
+
+#test vifs 
+vif(glm(formula = moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + 
+          +             can_cov + growth_cat + +dist_walk_cat + dist_road_cat, family = Gamma, 
+        +         data = bryophyte))
+
+#ran prev glm with added max humidity aic value = -727.86
+mossglmogcanmaxhum <- glm(formula = moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + max_humidity + can_cov + growth_cat + +dist_walk_cat + dist_road_cat, family = Gamma,  data = bryophyte)
+
+#test vif of last glm 
+vif(glm(formula = moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + 
+          +             max_humidity + can_cov + growth_cat + +dist_walk_cat + dist_road_cat, 
+        +         family = Gamma, data = bryophyte))
+
+#try last glm but replace max humidity with min humidity aic value = -731.09 
+mossglmogcanminhum <- glm(formula = moss_area_m2 + 1 ~ heat_island + micro_cat + water_pres + min_humidity + can_cov + growth_cat + +dist_walk_cat + dist_road_cat, family = Gamma,  data = bryophyte)
+
+
