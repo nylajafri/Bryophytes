@@ -13,7 +13,7 @@
 ################################################
 
 ### Set Working Directory
-setwd("C:/Users/nylaj/Desktop/Code/Bryophytes/General Linear Model") 
+setwd("C:/Users/nylaj/Desktop/Code/Bryophytes") 
 
 
 ### Read CSV Data 
@@ -237,6 +237,17 @@ abline(lm(bryophyte$num_col ~ bryophyte$min_humidity), col="red")
 plot(bryophyte$max_humidity, bryophyte$num_col, xlab = "Maximum Relative Humidity (over 1 year)", ylab = "Number of Colonies")
 abline(lm(bryophyte$num_col ~ bryophyte$max_humidity), col="red") 
 
+
+### Other Plots 
+attach(mtcars)
+par(mfrow=c(1,1))
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Bryophyte Area (m^2)")  
+boxplot(bryophyte$num_col ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Colonies")
+boxplot(bryophyte$num_species ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Species")
+
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Bryophyte Area (m^2)")
+boxplot(bryophyte$num_col ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Colonies")
+boxplot(bryophyte$num_species ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Species")
 
 ### Check Model Final 
 AIC()
