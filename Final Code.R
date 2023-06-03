@@ -175,17 +175,17 @@ vif(glm((moss_area_m2 + 1) ~ heat_island + micro_cat + water_pres + growth_cat +
 
 
 ### GLM for Each Applicable Dependent Variable (Find lowest AIC) 
-areaglm <- glm((moss_area_m2 +1) ~ heat_island + micro_cat + water_pres + growth_cat + can_cov + min_humidity, family = Gamma, data = bryophyte)
+areaglm <- glm((moss_area_m2 +1) ~ heat_island + micro_cat + water_pres + growth_cat + can_cov + min_humidity, family = Gamma, data = bryophyte) #Added 1 since Gamma cannot work with 0 
 vif(glm(num_species ~ heat_island + micro_cat + water_pres + growth_cat + dist_walk_cat + dist_road_cat + can_cov + max_humidity + min_humidity, family = poisson, data = bryophyte))
 avPlots(areaglm)
 tab_model(areaglm)
-AIC(areaglm)
+AIC(areaglm) #[1] -826.2767
 
 speciesglm <- glm(num_species ~ heat_island + micro_cat + water_pres + can_cov + dist_walk_cat + dist_road_cat, family = poisson, data = bryophyte)
 vif(glm(num_species ~ heat_island + micro_cat + water_pres + dist_walk_cat + dist_road_cat + can_cov, family = poisson, data = bryophyte))
 avPlots(speciesglm)
 tab_model(speciesglm)
-AIC(speciesglm)
+AIC(speciesglm) #[1] 187.893
 
 
 colonyglm <- glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat 
@@ -194,21 +194,22 @@ vif(glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat
         + dist_road_cat + can_cov + max_humidity + min_humidity, family = poisson, data = bryophyte))
 avPlots(colonyglm)
 tab_model(colonyglm)
-AIC(colonyglm)
+AIC(colonyglm) #[1] 2201.399
 
 
 ### Final Tables
-tab_model(areaglm, speciesglm,  colonyglm, 
+
+tab_model(areaglm, speciesglm, colonyglm)
+tab_model(areaglm, speciesglm, colonyglm,
           pred.labels = c("Intercept", "Urban Heat Island Index (over 1 year)", "Microhabitat",
                           "Water Present", "Growth Substrate", "Canopy Cover (Percentage)", "Minimum Relative Humidity (over 1 year)", "Maximum Relative Humidity (over 1 year)",
                           "Distance to Road", "Distance to Walkway"),  
-          dv.labels = c("Moss Area (m^2)", "Number of Colonies", "Number of Species"), 
+          dv.labels = c("Bryophyte Area (m^2)", "Number of Species", "Number of Colonies"), 
           title = "General Linear Model Analysis of Bryophytes")
 
 
-
 ### Significant Figures (Box Plots for Categorical and Scatter Plots with Line of Best Fit for Continuous)
-boxplot(bryophyte$moss_area_m2 ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Moss Area (m^2)")
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Bryophyte Area (m^2)")
 
 boxplot(bryophyte$num_species ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Number of Species")
 
