@@ -12,6 +12,9 @@
 #
 ################################################
 
+### Useful References 
+#https://stackoverflow.com/questions/47839988/indicating-significance-with-ggplot2-in-a-boxplot-with-multiple-groups
+
 ### Set Working Directory
 setwd("C:/Users/nylaj/Desktop/Code/Bryophytes") 
 
@@ -25,6 +28,7 @@ View(bryophyte)
 install.packages("sjPlot")
 install.packages("lme4")
 install.packages("ggplot2")
+install.packages("ggprism")
 
 library(MASS)
 library(rstatix)
@@ -33,6 +37,8 @@ library(sjPlot)
 library(lme4)
 library(ggplot2)
 library(car)
+library(ggsignif)
+library(ggpubr)
 
 
 ###Test Normality 
@@ -228,7 +234,7 @@ boxplot(bryophyte$num_col ~ bryophyte$growth_cat, xlab = "Growth Substrate", yla
 
 boxplot(bryophyte$num_col ~ bryophyte$dist_road_cat, xlab = "Distance to Road", ylab = "Number of Colonies")
 
-plot(bryophyte$can_cov, bryophyte$num_col, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")
+plot(bryophyte$can_cov, bryophyte$num_col, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")     #did not use ggplot for consistent aesthetics with box plots
 abline(lm(bryophyte$num_col ~ bryophyte$can_cov), col="red") 
 
 plot(bryophyte$min_humidity, bryophyte$num_col, xlab = "Minimum Relative Humidity (over 1 year)", ylab = "Number of Colonies")
@@ -239,11 +245,84 @@ abline(lm(bryophyte$num_col ~ bryophyte$max_humidity), col="red")
 
 
 ### Other Plots 
-attach(mtcars)
-par(mfrow=c(1,1))
-boxplot(bryophyte$moss_area_m2 ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Bryophyte Area (m^2)")  
-boxplot(bryophyte$num_col ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Colonies")
-boxplot(bryophyte$num_species ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Species")
+##Panel for UHHI
+bryophyte$heat_island = as.character(bryophyte$heat_island)
+my_comparisons = list( c("0", "1"), c("0", "2"), c("0", "3"), 
+                       c("1", "2"), c("1", "3"), c("2", "3") )
+
+heatarea=
+ggplot(data=bryophyte, mapping=aes(x=heat_island, y=moss_area_m2)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Heat Island Index (over 1 year)") + 
+  ylab("Bryophyte Area (m^2)") + 
+  theme_bw() + 
+  stat_compare_means(comparisons = cmpr, tip.length=0.01,
+                     label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c("****", "***", "**", "*", "ns")))
+heatcolony=
+ggplot(data=bryophyte, mapping=aes(x=heat_island, y=num_col)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Heat Island Index (over 1 year)") + 
+  ylab("Number of Colonies") + 
+  theme_bw() + 
+  stat_compare_means(comparisons = cmpr, tip.length=0.01,
+                     label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c("****", "***", "**", "*", "ns")))
+heatspecies=
+ggplot(data=bryophyte, mapping=aes(x=heat_island, y=num_species)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Heat Island Index (over 1 year)") + 
+  ylab("Number of Species") + 
+  theme_bw() + 
+  stat_compare_means(comparisons = cmpr, tip.length=0.01,
+                     label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c("****", "***", "**", "*", "ns")))
+ggarrange(heatarea, heatcolony, heatspecies + rremove("x.text"),  labels = c("A", "B", "C"),
+          ncol = 3, nrow = 1)
+
+
+##Panel for Microhabitat
+bryophyte$micro_cat = as.character(bryophyte$micro_cat)
+my_comparisons = list( c("0", "1"), c("0", "2"), c("0", "3"), 
+                       c("1", "2"), c("1", "3"), c("2", "3") )
+marea=
+  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=moss_area_m2)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Microhabitat") + 
+  ylab("Bryophyte Area (m^2)") + 
+  theme_bw() + 
+  stat_compare_means(comparisons = cmpr, tip.length=0.01,
+                     label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c("****", "***", "**", "*", "ns")))
+mcolony=
+  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=num_col)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Microhabitat") + 
+  ylab("Number of Colonies") + 
+  theme_bw() + 
+  stat_compare_means(comparisons = cmpr, tip.length=0.01,
+                     label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c("****", "***", "**", "*", "ns")))
+mspecies=
+  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=num_species)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Microhabitat") + 
+  ylab("Number of Species") + 
+  theme_bw() + 
+  stat_compare_means(comparisons = cmpr, tip.length=0.01,
+                     label = "p.signif", 
+                     symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+                                        symbols = c("****", "***", "**", "*", "ns")))
+ggarrange(marea, mcolony, mspecies + rremove("x.text"),  labels = c("A", "B", "C"),
+          ncol = 3, nrow = 1)
+
+
+
 
 boxplot(bryophyte$moss_area_m2 ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Bryophyte Area (m^2)")
 boxplot(bryophyte$num_col ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Colonies")
