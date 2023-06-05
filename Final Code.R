@@ -28,15 +28,13 @@ View(bryophyte)
 install.packages("sjPlot")
 install.packages("lme4")
 install.packages("ggplot2")
-install.packages("ggprism")
+install.packages("tidyverse")
 
-library(MASS)
-library(rstatix)
-library(readr)
-library(sjPlot)
+library(sjPlot) 
+library(car) 
+library(tidyverse)
 library(lme4)
 library(ggplot2)
-library(car)
 library(ggsignif)
 library(ggpubr)
 
@@ -182,20 +180,20 @@ vif(glm((moss_area_m2 + 1) ~ heat_island + micro_cat + water_pres + growth_cat +
 
 ### GLM for Each Applicable Dependent Variable (Find lowest AIC) 
 areaglm <- glm((moss_area_m2 +1) ~ heat_island + micro_cat + water_pres + growth_cat + can_cov + min_humidity, family = Gamma, data = bryophyte) #Added 1 since Gamma cannot work with 0 
-vif(glm(num_species ~ heat_island + micro_cat + water_pres + growth_cat + dist_walk_cat + dist_road_cat + can_cov + max_humidity + min_humidity, family = poisson, data = bryophyte))
+vif(glm((moss_area_m2 +1) ~ heat_island + micro_cat + water_pres + growth_cat + can_cov + min_humidity, family = poisson, data = bryophyte))
 avPlots(areaglm)
 tab_model(areaglm)
 AIC(areaglm) #[1] -826.1631
 
-speciesglm <- glm(num_species ~ heat_island + micro_cat + water_pres + can_cov + dist_walk_cat + dist_road_cat, family = poisson, data = bryophyte)
+speciesglm <- glm(num_species ~ heat_island + micro_cat + water_pres + can_cov + growth_cat + dist_road_cat, family = poisson, data = bryophyte)
 vif(glm(num_species ~ heat_island + micro_cat + water_pres + dist_walk_cat + dist_road_cat + can_cov, family = poisson, data = bryophyte))
 avPlots(speciesglm)
 tab_model(speciesglm)
-AIC(speciesglm) #[1] 187.893
+AIC(speciesglm) #[1] 187.3201
 
 
 colonyglm <- glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat 
-                 + can_cov + max_humidity + min_humidity + + dist_road_cat, family = poisson, data = bryophyte)
+                 + can_cov + max_humidity + min_humidity + dist_road_cat, family = poisson, data = bryophyte)
 vif(glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat 
         + dist_road_cat + can_cov + max_humidity + min_humidity, family = poisson, data = bryophyte))
 avPlots(colonyglm)
@@ -205,12 +203,12 @@ AIC(colonyglm) #[1] 2213.366
 
 ### Final Tables
 
-tab_model(areaglm, speciesglm, colonyglm)
-tab_model(areaglm, speciesglm, colonyglm,
+tab_model(areaglm, colonyglm, speciesglm)
+tab_model(areaglm, colonyglm, speciesglm,
           pred.labels = c("Intercept", "Urban Heat Island Index (over 1 year)", "Microhabitat",
                           "Water Present", "Growth Substrate", "Canopy Cover (Percentage)", "Minimum Relative Humidity (over 1 year)", "Maximum Relative Humidity (over 1 year)",
-                          "Distance to Road", "Distance to Walkway"),  
-          dv.labels = c("Bryophyte Area (m^2)", "Number of Species", "Number of Colonies"), 
+                          "Distance to Road"),  
+          dv.labels = c("Bryophyte Area (m^2)", "Number of Colonies", "Number of Species"), 
           title = "General Linear Model Analysis of Bryophytes")
 
 
@@ -247,7 +245,7 @@ abline(lm(bryophyte$num_col ~ bryophyte$max_humidity), col="red")
 ### Other Plots 
 ##Panel for UHHI
 bryophyte$heat_island = as.character(bryophyte$heat_island)
-my_comparisons = list( c("0", "1"), c("0", "2"), c("0", "3"), 
+cpr = list( c("0", "1"), c("0", "2"), c("0", "3"), 
                        c("1", "2"), c("1", "3"), c("2", "3") )
 
 heatarea=
@@ -256,8 +254,8 @@ ggplot(data=bryophyte, mapping=aes(x=heat_island, y=moss_area_m2)) +
   xlab("Heat Island Index (over 1 year)") + 
   ylab("Bryophyte Area (m^2)") + 
   theme_bw() + 
-  stat_compare_means(comparisons = cmpr, tip.length=0.01,
-                     label = "p.signif", 
+  stat_compare_means(comparisons = cpr, tip.length=0.01,
+                     label = "p.signif", test = "kruskal.test" , 
                      symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
                                         symbols = c("****", "***", "**", "*", "ns")))
 heatcolony=
@@ -266,8 +264,8 @@ ggplot(data=bryophyte, mapping=aes(x=heat_island, y=num_col)) +
   xlab("Heat Island Index (over 1 year)") + 
   ylab("Number of Colonies") + 
   theme_bw() + 
-  stat_compare_means(comparisons = cmpr, tip.length=0.01,
-                     label = "p.signif", 
+  stat_compare_means(comparisons = cpr, tip.length=0.01,
+                     label = "p.signif", test = "kruskal.test" , 
                      symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
                                         symbols = c("****", "***", "**", "*", "ns")))
 heatspecies=
@@ -276,8 +274,8 @@ ggplot(data=bryophyte, mapping=aes(x=heat_island, y=num_species)) +
   xlab("Heat Island Index (over 1 year)") + 
   ylab("Number of Species") + 
   theme_bw() + 
-  stat_compare_means(comparisons = cmpr, tip.length=0.01,
-                     label = "p.signif", 
+  stat_compare_means(comparisons = cpr, tip.length=0.01, 
+                     label = "p.signif", test = "kruskal.test" , 
                      symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
                                         symbols = c("****", "***", "**", "*", "ns")))
 ggarrange(heatarea, heatcolony, heatspecies + rremove("x.text"),  labels = c("A", "B", "C"),
@@ -294,8 +292,8 @@ marea=
   xlab("Microhabitat") + 
   ylab("Bryophyte Area (m^2)") + 
   theme_bw() + 
-  stat_compare_means(comparisons = cmpr, tip.length=0.01,
-                     label = "p.signif", 
+  stat_compare_means(comparisons = cpr, tip.length=0.01,
+                     label = "p.signif", test = "kruskal.test" , 
                      symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
                                         symbols = c("****", "***", "**", "*", "ns")))
 mcolony=
@@ -304,8 +302,8 @@ mcolony=
   xlab("Microhabitat") + 
   ylab("Number of Colonies") + 
   theme_bw() + 
-  stat_compare_means(comparisons = cmpr, tip.length=0.01,
-                     label = "p.signif", 
+  stat_compare_means(comparisons = cpr, tip.length=0.01,
+                     label = "p.signif", test = "kruskal.test" , 
                      symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
                                         symbols = c("****", "***", "**", "*", "ns")))
 mspecies=
@@ -314,19 +312,24 @@ mspecies=
   xlab("Microhabitat") + 
   ylab("Number of Species") + 
   theme_bw() + 
-  stat_compare_means(comparisons = cmpr, tip.length=0.01,
-                     label = "p.signif", 
+  stat_compare_means(comparisons = cpr, tip.length=0.01,
+                     label = "p.signif", test = "kruskal.test" , 
                      symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
                                         symbols = c("****", "***", "**", "*", "ns")))
 ggarrange(marea, mcolony, mspecies + rremove("x.text"),  labels = c("A", "B", "C"),
           ncol = 3, nrow = 1)
 
 
+### No Significance Star Included Plots 
+attach(mtcars)
+par(mfrow=c(1,3))
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Bryophyte Area (m^2)")
+boxplot(bryophyte$num_col ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Colonies")
+boxplot(bryophyte$num_species ~ bryophyte$heat_island, xlab = "Heat Island Index (over 1 year)", ylab = "Number of Species")
 
-
-#boxplot(bryophyte$moss_area_m2 ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Bryophyte Area (m^2)")
-#boxplot(bryophyte$num_col ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Colonies")
-#boxplot(bryophyte$num_species ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Species")
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Bryophyte Area (m^2)")
+boxplot(bryophyte$num_col ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Colonies")
+boxplot(bryophyte$num_species ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Species")
 
 ### Check Model Final 
 AIC()
