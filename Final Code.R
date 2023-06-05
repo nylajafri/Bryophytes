@@ -184,12 +184,14 @@ vif(glm((moss_area_m2 +1) ~ heat_island + micro_cat + water_pres + growth_cat + 
 avPlots(areaglm)
 tab_model(areaglm)
 AIC(areaglm) #[1] -826.1631
+summary(areaglm)
 
 speciesglm <- glm(num_species ~ heat_island + micro_cat + water_pres + can_cov + growth_cat + dist_road_cat, family = poisson, data = bryophyte)
 vif(glm(num_species ~ heat_island + micro_cat + water_pres + dist_walk_cat + dist_road_cat + can_cov, family = poisson, data = bryophyte))
 avPlots(speciesglm)
 tab_model(speciesglm)
 AIC(speciesglm) #[1] 187.3201
+summary(speciesglm)
 
 
 colonyglm <- glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat 
@@ -199,6 +201,7 @@ vif(glm(num_col ~ heat_island + micro_cat + water_pres + growth_cat
 avPlots(colonyglm)
 tab_model(colonyglm)
 AIC(colonyglm) #[1] 2213.366
+summary(colonyglm)
 
 
 ### Final Tables
@@ -206,7 +209,7 @@ AIC(colonyglm) #[1] 2213.366
 tab_model(areaglm, colonyglm, speciesglm)
 tab_model(areaglm, colonyglm, speciesglm,
           pred.labels = c("Intercept", "Urban Heat Island Index (over 1 year)", "Microhabitat",
-                          "Water Present", "Growth Substrate", "Canopy Cover (Percentage)", "Minimum Relative Humidity (over 1 year)", "Maximum Relative Humidity (over 1 year)",
+                          "Water Present", "Growth Substrate", "Canopy Cover (Percentage)", "Minimum Relative Humidity (Percentage, over 1 year)", "Maximum Relative Humidity (Percentage, over 1 year)",
                           "Distance to Road"),  
           dv.labels = c("Bryophyte Area (m^2)", "Number of Colonies", "Number of Species"), 
           title = "General Linear Model Analysis of Bryophytes")
@@ -235,10 +238,10 @@ boxplot(bryophyte$num_col ~ bryophyte$dist_road_cat, xlab = "Distance to Road", 
 plot(bryophyte$can_cov, bryophyte$num_col, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")     #did not use ggplot for consistent aesthetics with box plots
 abline(lm(bryophyte$num_col ~ bryophyte$can_cov), col="red") 
 
-plot(bryophyte$min_humidity, bryophyte$num_col, xlab = "Minimum Relative Humidity (over 1 year)", ylab = "Number of Colonies")
+plot(bryophyte$min_humidity, bryophyte$num_col, xlab = "Minimum Relative Humidity (Percentage, over 1 year)", ylab = "Number of Colonies")
 abline(lm(bryophyte$num_col ~ bryophyte$min_humidity), col="red") 
 
-plot(bryophyte$max_humidity, bryophyte$num_col, xlab = "Maximum Relative Humidity (over 1 year)", ylab = "Number of Colonies")
+plot(bryophyte$max_humidity, bryophyte$num_col, xlab = "Maximum Relative Humidity (Percentage, over 1 year)", ylab = "Number of Colonies")
 abline(lm(bryophyte$num_col ~ bryophyte$max_humidity), col="red") 
 
 
