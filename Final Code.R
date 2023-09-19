@@ -238,10 +238,10 @@ boxplot(bryophyte$num_col ~ bryophyte$dist_road_cat, xlab = "Distance to Road", 
 plot(bryophyte$can_cov, bryophyte$num_col, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")     #did not use ggplot for consistent aesthetics with box plots
 abline(lm(bryophyte$num_col ~ bryophyte$can_cov), col="red") 
 
-plot(bryophyte$min_humidity, bryophyte$num_col, xlab = "Minimum Relative Humidity (Percentage, over 1 year)", ylab = "Number of Colonies")
+plot(bryophyte$min_humidity, bryophyte$num_col, xlab = substitute(paste(bold("Minimum Relative Humidity (Percentage, over 1 year)"))), ylab = substitute(paste(bold("Number of Colonies"))))
 abline(lm(bryophyte$num_col ~ bryophyte$min_humidity), col="red") 
 
-plot(bryophyte$max_humidity, bryophyte$num_col, xlab = "Maximum Relative Humidity (Percentage, over 1 year)", ylab = "Number of Colonies")
+plot(bryophyte$max_humidity, bryophyte$num_col, xlab = substitute(paste(bold("Maximum Relative Humidity (Percentage, over 1 year)"))), ylab = substitute(paste(bold("Number of Colonies"))))
 abline(lm(bryophyte$num_col ~ bryophyte$max_humidity), col="red") 
 
 
@@ -287,20 +287,24 @@ ggarrange(heatarea, heatcolony, heatspecies + rremove("x.text"),  labels = c("A"
 
 ##Panel for Microhabitat
 bryophyte$micro_cat = as.character(bryophyte$micro_cat)
-my_comparisons = list( c("0", "1"), c("0", "2"), c("0", "3"), 
+cpr = list( c("0", "1"), c("0", "2"), c("0", "3"), 
                        c("1", "2"), c("1", "3"), c("2", "3") )
+xlabels= c("Green space", "Waterway", "Urban", "Residential")
+  
 marea=
-  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=moss_area_m2)) +
+  ggplot(data=bryophyte, mapping=aes(x=heat_island, y=moss_area_m2)) +
   geom_boxplot(fill="gray") + 
   xlab("Microhabitat") + 
   ylab("Bryophyte Area (m^2)") + 
-  theme_bw() + 
-  stat_compare_means(comparisons = cpr, tip.length=0.01,
-                     label = "p.signif", test = "kruskal.test" , 
-                     symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
-                                        symbols = c("****", "***", "**", "*", "ns")))
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() #+ 
+  # stat_compare_means(comparisons = cpr, tip.length=0.01,
+  #                    label = "p.signif", test = "kruskal.test" , 
+  #                    symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
+  #                                       symbols = c("****", "***", "**", "*", "ns")))
+
 mcolony=
-  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=num_col)) +
+  ggplot(data=bryophyte, mapping=aes(x=heat_island, y=num_col)) +
   geom_boxplot(fill="gray") + 
   xlab("Microhabitat") + 
   ylab("Number of Colonies") + 
@@ -309,8 +313,9 @@ mcolony=
                      label = "p.signif", test = "kruskal.test" , 
                      symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1), 
                                         symbols = c("****", "***", "**", "*", "ns")))
+
 mspecies=
-  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=num_species)) +
+  ggplot(data=bryophyte, mapping=aes(x=heat_island, y=num_species)) +
   geom_boxplot(fill="gray") + 
   xlab("Microhabitat") + 
   ylab("Number of Species") + 
@@ -323,26 +328,146 @@ ggarrange(marea, mcolony, mspecies + rremove("x.text"),  labels = c("A", "B", "C
           ncol = 3, nrow = 1)
 
 
+### Plots for Slides 
+
+##UHHI 
+bryophyte$heat_island = as.character(bryophyte$heat_island)
+xlabels= c("0-4999", "5000-15666", "15667-26333", "26334-37065")
+
+marea=
+  ggplot(data=bryophyte, mapping=aes(x=heat_island, y=moss_area_m2)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Urban Heat Island Index") + 
+  ylab("Bryophyte Area (m^2)") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+mcolony=
+  ggplot(data=bryophyte, mapping=aes(x=heat_island, y=num_col)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Urban Heat Island Index ") + 
+  ylab("Number of Colonies") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+mspecies=
+  ggplot(data=bryophyte, mapping=aes(x=heat_island, y=num_species)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Urban Heat Island Index ") + 
+  ylab("Number of Species") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() + 
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+ggarrange(marea, mcolony, mspecies,  labels = c("A", "B", "C"),
+          ncol = 3, nrow = 1)
+
+##Microhabitat
+bryophyte$micro_cat = as.character(bryophyte$micro_cat)
+cpr = list( c("0", "1"), c("0", "2"), c("0", "3"), 
+            c("1", "2"), c("1", "3"), c("2", "3") )
+xlabels= c("Green space", "Waterway", "Urban", "Residential")
+
+marea=
+  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=moss_area_m2)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Microhabitat") + 
+  ylab("Bryophyte Area (m^2)") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+mcolony=
+  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=num_col)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Microhabitat") + 
+  ylab("Number of Colonies") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+mspecies=
+  ggplot(data=bryophyte, mapping=aes(x=micro_cat, y=num_species)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Microhabitat") + 
+  ylab("Number of Species") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+ggarrange(marea, mcolony, mspecies,  labels = c("A", "B", "C"),
+          ncol = 3, nrow = 1)
+
+##Water Present
+bryophyte$water_pres = as.character(bryophyte$water_pres)
+cpr = list( c("0", "1"), c("0", "2"), 
+            c("1", "2") )
+xlabels= c("Not Present", "Present")
+
+warea=
+  ggplot(data=bryophyte, mapping=aes(x=water_pres, y=moss_area_m2)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Water Presence") + 
+  ylab("Bryophyte Area (m^2)") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+wcolony=
+  ggplot(data=bryophyte, mapping=aes(x=water_pres, y=num_col)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Water Presence") + 
+  ylab("Number of Colonies") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+wspecies=
+  ggplot(data=bryophyte, mapping=aes(x=water_pres, y=num_species)) +
+  geom_boxplot(fill="gray") + 
+  xlab("Water Presence") + 
+  ylab("Number of Species") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+ggarrange(warea, wcolony, wspecies,  labels = c("A", "B", "C"),
+          ncol = 3, nrow = 1)
+
+##Growth Substrate
+bryophyte$growth_cat = as.character(bryophyte$growth_cat)
+xlabels= c("Dirt", "Tree", "Concrete", "Rock", "Asphalt", "Sand")
+ggplot(data=bryophyte, mapping=aes(x=growth_cat, y=num_col)) + 
+  geom_boxplot(fill="gray") + 
+  xlab("Growth Substrate") + 
+  ylab("Number of Colonies") + 
+  scale_x_discrete(labels=xlabels) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+
+
 ### No Significance Star Included Plots 
 attach(mtcars)
-par(mfrow=c(1,3))
-boxplot(bryophyte$moss_area_m2 ~ bryophyte$heat_island, xlab = "Urban Heat Island Index (degree (Celsius) hours per day, over 1 year)", ylab = "Bryophyte Area (m^2)")
-boxplot(bryophyte$num_col ~ bryophyte$heat_island, xlab = "Urban Heat Island Index (degree (Celsius) hours per day, over 1 year)", ylab = "Number of Colonies")
-boxplot(bryophyte$num_species ~ bryophyte$heat_island, xlab = "Urban Heat Island Index (degree (Celsius) hours per day, over 1 year)", ylab = "Number of Species")
+par(mfrow=c(1,2))
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$heat_island, xlab = "Urban Heat Island Index", ylab = "Bryophyte Area (m^2)", cex.lab=1.5)
+boxplot(bryophyte$num_col ~ bryophyte$heat_island, xlab = "Urban Heat Island Index", ylab = "Number of Colonies", cex.lab=1.5)
+boxplot(bryophyte$num_species ~ bryophyte$heat_island, xlab = "Urban Heat Island Index", ylab = "Number of Species", cex.lab=1.5)
 
-boxplot(bryophyte$moss_area_m2 ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Bryophyte Area (m^2)")
-boxplot(bryophyte$num_col ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Colonies")
-boxplot(bryophyte$num_species ~ bryophyte$micro_cat, xlab = "Microhabitat", ylab = "Number of Species")
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$micro_cat, xlab = substitute(paste(bold('Microhabitat'))), ylab = substitute(paste(bold('Bryophyte Area (m^2)'))), cex.lab=1.5)
+boxplot(bryophyte$num_col ~ bryophyte$micro_cat, xlab = substitute(paste(bold('Microhabitat'))), ylab = substitute(paste(bold("Number of Colonies"))), cex.lab=1.5)
+boxplot(bryophyte$num_species ~ bryophyte$micro_cat, xlab = substitute(paste(bold('Microhabitat'))), ylab = substitute(paste(bold("Number of Species"))), cex.lab=1.5)
 
-boxplot(bryophyte$moss_area_m2 ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Bryophyte Area (m^2)")
-boxplot(bryophyte$num_col ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Number of Colonies")
-boxplot(bryophyte$num_species ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Number of Species")
+boxplot(bryophyte$moss_area_m2 ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Bryophyte Area (m^2)", cex.lab=1.5)
+boxplot(bryophyte$num_col ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Number of Colonies", cex.lab=1.5)
+boxplot(bryophyte$num_species ~ bryophyte$water_pres, xlab = "Water Present", ylab = "Number of Species", cex.lab=1.5)
 
-plot(bryophyte$moss_area_m2 ~ bryophyte$can_cov, xlab = "Canopy Cover (Percentage)", ylab = "Bryophyte Area (m^2)")
+plot(bryophyte$moss_area_m2 ~ bryophyte$can_cov, xlab = substitute(paste(bold("Canopy Cover (Percentage)"))), ylab = substitute(paste(bold("Bryophyte Area (m^2)"))), cex.lab=1.3)
 abline(lm(bryophyte$moss_area_m2 ~ bryophyte$can_cov), col="red")
-plot(bryophyte$num_col ~ bryophyte$can_cov, xlab = "Canopy Cover (Percentage)", ylab = "Number of Colonies")
+plot(bryophyte$num_col ~ bryophyte$can_cov, xlab = substitute(paste(bold("Canopy Cover (Percentage)"))), ylab = substitute(paste(bold("Number of Colonies"))), cex.lab=1.3)
 abline(lm(bryophyte$num_col ~ bryophyte$can_cov), col="red") 
-plot(bryophyte$num_species ~ bryophyte$can_cov, xlab = "Canopy Cover (Percentage)", ylab = "Number of Species")
+plot(bryophyte$num_species ~ bryophyte$can_cov, xlab = substitute(paste(bold("Canopy Cover (Percentage)"))), ylab = substitute(paste(bold("Number of Species"))), cex.lab=1.3)
 abline(lm(bryophyte$num_species ~ bryophyte$can_cov), col="red")
 
 
